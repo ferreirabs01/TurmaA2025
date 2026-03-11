@@ -21,39 +21,49 @@
 
             <section data-background-color="#050505">
                 <h1>Swagger via JSON</h1>
-                <p>Organização Máxima: Separando a Documentação do Código</p>
+                <p>Organização Máxima: Documentação Separada do Código</p>
                 <div class="fragment box" style="text-align: center; border-color: var(--cyan);">
-                    "Mantenha seu código limpo e sua documentação centralizada em um único lugar."
+                    "Mantenha seu código limpo e sua especificação centralizada em um único arquivo."
                 </div>
             </section>
 
             <section>
-                <h2>Por que usar JSON externo?</h2>
-                <div class="box">
-                    <ul>
-                        <li><span class="code-accent">Código Limpo:</span> Suas rotas Node.js ficam livres de comentários gigantes.</li>
-                        <li><span class="code-accent">Portabilidade:</span> O arquivo JSON pode ser importado em outras ferramentas (Postman, Insomnia).</li>
-                        <li><span class="code-accent">Padronização:</span> Facilita o trabalho em equipe onde alguém foca só na escrita da especificação.</li>
-                    </ul>
+                <h2>A Planta do Prédio</h2>
+                <div class="box" style="border-color: var(--green);">
+                    <p>Se documentar via JSDoc é como colocar etiquetas em cada tomada enquanto constrói a casa...</p>
+                    <p class="fragment">...o <strong>JSON Externo</strong> é como ter a **Planta Azul (Blueprint)** em uma mesa separada. Você consulta o mapa completo sem precisar abrir as paredes.</p>
+                </div>
+                
+            </section>
+
+            <section>
+                <h3>Passo 0: Instalação</h3>
+                <p style="font-size: 0.6em;">Mesmo usando um arquivo externo, precisamos da biblioteca que renderiza a interface no Express:</p>
+                <pre><code class="language-bash" data-trim>
+                npm install swagger-ui-express
+                </code></pre>
+                <div class="box" style="margin-top: 20px; font-size: 0.5em;">
+                    <strong>Nota:</strong> Neste modo (JSON externo), não precisamos da biblioteca <i>swagger-jsdoc</i>, pois escreveremos o JSON manualmente.
                 </div>
             </section>
 
             <section>
-                <h3>Passo 1: Crie o arquivo <code class="code-accent">swagger.json</code></h3>
-                <p style="font-size: 0.5em;">Na raiz do projeto, defina toda a estrutura da API:</p>
+                <h3>Passo 1: Criar o JSON</h3>
+                <p style="font-size: 0.5em;">Crie um arquivo chamado <code class="code-accent">swagger.json</code> na raiz do seu projeto:</p>
                 <pre><code class="language-json" style="font-size: 0.4em; line-height: 1.2;">
 {
   "openapi": "3.0.0",
   "info": {
     "title": "Minha API Backend",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "description": "Documentação via arquivo JSON externo"
   },
   "paths": {
     "/usuarios": {
       "get": {
         "summary": "Lista todos os usuários",
         "responses": {
-          "200": { "description": "OK" }
+          "200": { "description": "Lista enviada com sucesso" }
         }
       }
     }
@@ -63,58 +73,53 @@
             </section>
 
             <section>
-                <h3>Passo 2: Carregando no Node.js</h3>
-                <p style="font-size: 0.5em;">Basta importar o JSON e passar para o middleware:</p>
+                <h3>Passo 2: Configurar a Rota</h3>
+                <p style="font-size: 0.5em;">No seu <code class="code-accent">app.js</code>, importe o arquivo e configure o middleware:</p>
                 <pre><code class="language-javascript" style="font-size: 0.4em; line-height: 1.2;">
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json'); // Importa o arquivo
+const swaggerDocument = require('./swagger.json'); // Importando o arquivo
 
 const app = express();
 
-// Rota da documentação
+// Configuração da rota visual
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.listen(3000, () => console.log('Online!'));
+app.get('/usuarios', (req, res) => {
+    res.json([{ id: 1, nome: 'Dev Neon' }]);
+});
+
+app.listen(3000, () => console.log('Acesse: http://localhost:3000/api-docs'));
                 </code></pre>
             </section>
 
             <section>
-                <h2>A Analogia da Planta do Prédio</h2>
-                <div class="box" style="border-color: var(--green);">
-                    <p>Enquanto o JSDoc é como colocar etiquetas em cada tomada enquanto você constrói a casa...</p>
-                    <p class="fragment">...o <strong>JSON Externo</strong> é como ter a **Planta Azul (Blueprint)** em uma mesa separada. Você consulta o mapa completo sem precisar abrir as paredes.</p>
-                </div>
-            </section>
-
-            <section>
-                <h3>Dica Pro: Inteligência no JSON</h3>
+                <h2>Por que este método?</h2>
                 <div class="box">
-                    <p>No VS Code, se você começar o arquivo com a chave <code class="code-accent">"$schema"</code>, ele te dará auto-complete para não errar as tags da OpenAPI.</p>
+                    <ul>
+                        <li><span class="code-accent">Código Limpo:</span> Suas rotas ficam livres de comentários gigantes.</li>
+                        <li><span class="code-accent">Portabilidade:</span> O arquivo JSON pode ser usado no Postman ou Insomnia.</li>
+                        <li><span class="code-accent">Colaboração:</span> Outros membros da equipe podem editar a documentação sem tocar no código lógico.</li>
+                    </ul>
                 </div>
-                <pre><code class="language-json" style="font-size: 0.5em;">
-{
-  "$schema": "https://json.schemastore.org/swagger-2.0.json",
-  ...
-}
-                </code></pre>
+                
             </section>
 
             <section data-background-color="#282a36">
                 <h2>Missão JSON</h2>
                 <div class="box">
                     <ol>
-                        <li>Crie um arquivo <code class="code-accent">swagger.json</code>.</li>
-                        <li>Remova os comentários JSDoc das suas rotas.</li>
-                        <li>Refatore o <code class="code-accent">app.js</code> para ler o arquivo externo.</li>
-                        <li>Tente adicionar um novo endpoint de "Login" diretamente no JSON.</li>
+                        <li>Crie o arquivo <code class="code-accent">swagger.json</code>.</li>
+                        <li>Remova os comentários JSDoc das suas rotas (se houver).</li>
+                        <li>Faça o <code class="code-accent">require</code> do JSON no seu servidor.</li>
+                        <li>Adicione uma nova rota de **POST /login** diretamente no arquivo JSON e salve para ver a atualização.</li>
                     </ol>
                 </div>
             </section>
 
             <section>
-                <h1>Documentação Organizada!</h1>
-                <p>Escolha o método que melhor se adapta ao seu fluxo.</p>
+                <h1>Organização Profissional</h1>
+                <p>Sua API agora tem uma documentação elegante e desacoplada.</p>
                 <a href="index.html" style="color: var(--pink); border: 1px solid var(--pink); padding: 10px 20px; border-radius: 5px; text-decoration: none; font-size: 0.6em;">Voltar ao Menu</a>
             </section>
 
