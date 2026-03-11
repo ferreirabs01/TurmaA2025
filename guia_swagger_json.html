@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <title>Backend Lab: Swagger via JSON Externo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css">
+    <style>
+        :root { --cyan: #00f2ff; --green: #39ff14; --pink: #ff79c6; --yellow: #f1fa8c; }
+        .reveal h1, .reveal h2 { color: var(--pink); text-shadow: 0 0 15px var(--pink); text-transform: uppercase; }
+        .reveal h3 { color: var(--cyan); }
+        .box { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; border: 1px solid var(--pink); text-align: left; font-size: 0.7em; }
+        .code-accent { color: var(--yellow); font-family: monospace; font-weight: bold; }
+        pre { box-shadow: 0 0 20px rgba(255, 121, 198, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <section data-background-color="#050505">
+                <h1>Swagger via JSON</h1>
+                <p>Organização Máxima: Separando a Documentação do Código</p>
+                <div class="fragment box" style="text-align: center; border-color: var(--cyan);">
+                    "Mantenha seu código limpo e sua documentação centralizada em um único lugar."
+                </div>
+            </section>
+
+            <section>
+                <h2>Por que usar JSON externo?</h2>
+                <div class="box">
+                    <ul>
+                        <li><span class="code-accent">Código Limpo:</span> Suas rotas Node.js ficam livres de comentários gigantes.</li>
+                        <li><span class="code-accent">Portabilidade:</span> O arquivo JSON pode ser importado em outras ferramentas (Postman, Insomnia).</li>
+                        <li><span class="code-accent">Padronização:</span> Facilita o trabalho em equipe onde alguém foca só na escrita da especificação.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h3>Passo 1: Crie o arquivo <code class="code-accent">swagger.json</code></h3>
+                <p style="font-size: 0.5em;">Na raiz do projeto, defina toda a estrutura da API:</p>
+                <pre><code class="language-json" style="font-size: 0.4em; line-height: 1.2;">
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Minha API Backend",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/usuarios": {
+      "get": {
+        "summary": "Lista todos os usuários",
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    }
+  }
+}
+                </code></pre>
+            </section>
+
+            <section>
+                <h3>Passo 2: Carregando no Node.js</h3>
+                <p style="font-size: 0.5em;">Basta importar o JSON e passar para o middleware:</p>
+                <pre><code class="language-javascript" style="font-size: 0.4em; line-height: 1.2;">
+const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json'); // Importa o arquivo
+
+const app = express();
+
+// Rota da documentação
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+app.listen(3000, () => console.log('Online!'));
+                </code></pre>
+            </section>
+
+            <section>
+                <h2>A Analogia da Planta do Prédio</h2>
+                <div class="box" style="border-color: var(--green);">
+                    <p>Enquanto o JSDoc é como colocar etiquetas em cada tomada enquanto você constrói a casa...</p>
+                    <p class="fragment">...o <strong>JSON Externo</strong> é como ter a **Planta Azul (Blueprint)** em uma mesa separada. Você consulta o mapa completo sem precisar abrir as paredes.</p>
+                </div>
+            </section>
+
+            <section>
+                <h3>Dica Pro: Inteligência no JSON</h3>
+                <div class="box">
+                    <p>No VS Code, se você começar o arquivo com a chave <code class="code-accent">"$schema"</code>, ele te dará auto-complete para não errar as tags da OpenAPI.</p>
+                </div>
+                <pre><code class="language-json" style="font-size: 0.5em;">
+{
+  "$schema": "https://json.schemastore.org/swagger-2.0.json",
+  ...
+}
+                </code></pre>
+            </section>
+
+            <section data-background-color="#282a36">
+                <h2>Missão JSON</h2>
+                <div class="box">
+                    <ol>
+                        <li>Crie um arquivo <code class="code-accent">swagger.json</code>.</li>
+                        <li>Remova os comentários JSDoc das suas rotas.</li>
+                        <li>Refatore o <code class="code-accent">app.js</code> para ler o arquivo externo.</li>
+                        <li>Tente adicionar um novo endpoint de "Login" diretamente no JSON.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section>
+                <h1>Documentação Organizada!</h1>
+                <p>Escolha o método que melhor se adapta ao seu fluxo.</p>
+                <a href="index.html" style="color: var(--pink); border: 1px solid var(--pink); padding: 10px 20px; border-radius: 5px; text-decoration: none; font-size: 0.6em;">Voltar ao Menu</a>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            center: true,
+            transition: 'slide'
+        });
+    </script>
+</body>
+</html>
