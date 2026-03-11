@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <title>Backend Lab: Dominando o Swagger</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css">
+    <style>
+        :root { --cyan: #00f2ff; --green: #39ff14; --pink: #ff79c6; --yellow: #f1fa8c; }
+        .reveal h1, .reveal h2 { color: var(--cyan); text-shadow: 0 0 15px var(--cyan); text-transform: uppercase; }
+        .reveal h3 { color: var(--green); }
+        .box { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; border: 1px solid var(--cyan); text-align: left; font-size: 0.7em; }
+        .code-accent { color: var(--yellow); font-family: monospace; font-weight: bold; }
+        .highlight-pink { color: var(--pink); font-weight: bold; }
+        pre { box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <section data-background-color="#050505">
+                <h1>Swagger & OpenAPI</h1>
+                <p>A Vitrine da sua API Backend</p>
+                <div class="fragment box" style="text-align: center; border-color: var(--pink);">
+                    "Se o código é o motor, o Swagger é o painel de controle do piloto."
+                </div>
+            </section>
+
+            <section>
+                <h2>A Analogia do Cardápio</h2>
+                <div style="display: flex; gap: 20px; align-items: center;">
+                    <div class="box" style="flex: 1;">
+                        <p>Imagine um restaurante sem cardápio:</p>
+                        <ul>
+                            <li>O cliente não sabe o que pedir.</li>
+                            <li>O garçom fica exausto de explicar.</li>
+                            <li>Erros de pedido acontecem toda hora.</li>
+                        </ul>
+                    </div>
+                    <div class="box" style="flex: 1; border-color: var(--green);">
+                        <p><strong>Com Swagger:</strong></p>
+                        <ul>
+                            <li>O Front-end vê todos os pratos (Rotas).</li>
+                            <li>Sabe os ingredientes (Parâmetros).</li>
+                            <li>Sabe o preço (Tipo de Retorno).</li>
+                        </ul>
+                    </div>
+                </div>
+                
+            </section>
+
+            <section>
+                <h2>OpenAPI vs Swagger</h2>
+                <div class="box">
+                    <p><span class="code-accent">OpenAPI:</span> É a <strong>Regra/Padrão</strong>. Um documento (JSON ou YAML) que descreve como a API funciona.</p>
+                    <p class="fragment"><span class="code-accent">Swagger:</span> É o <strong>Conjunto de Ferramentas</strong> que pega esse padrão e cria a interface visual bonita e interativa que usamos.</p>
+                </div>
+                
+            </section>
+
+            <section>
+                <h3>Passo 1: Preparando o Terreno</h3>
+                <p style="font-size: 0.6em;">No seu projeto Node.js, instale as bibliotecas necessárias:</p>
+                <pre><code class="language-bash" data-trim>
+                npm install swagger-ui-express swagger-jsdoc
+                </code></pre>
+                <div class="box" style="margin-top: 20px; font-size: 0.5em;">
+                    <strong>swagger-ui-express:</strong> Cria a página visual.<br>
+                    <strong>swagger-jsdoc:</strong> Lê seus comentários no código e gera a documentação.
+                </div>
+            </section>
+
+            <section>
+                <h3>Passo 2: Configurando o Motor</h3>
+                <p style="font-size: 0.5em;">Adicione isso ao seu <code class="code-accent">app.js</code> ou <code class="code-accent">server.js</code>:</p>
+                <pre><code class="language-javascript" style="font-size: 0.4em; line-height: 1.2;">
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+const swaggerOptions = {
+    swaggerDefinition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'API de Alunos - Lab Backend',
+            version: '1.0.0',
+            description: 'Sistema de Gestão de Alunos 2026'
+        },
+        servers: [{ url: 'http://localhost:3000' }]
+    },
+    apis: ['app.js'] // Onde o Swagger vai procurar os comentários
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+                </code></pre>
+            </section>
+
+            <section>
+                <h3>Passo 3: Documentando uma Rota</h3>
+                <p style="font-size: 0.5em;">Use o padrão JSDoc acima da sua rota:</p>
+                <pre><code class="language-javascript" style="font-size: 0.4em; line-height: 1.2;">
+/**
+ * @openapi
+ * /alunos:
+ * get:
+ * description: Retorna a lista completa de alunos.
+ * responses:
+ * 200:
+ * description: Sucesso ao retornar a lista.
+ */
+app.get('/alunos', (req, res) => {
+    res.status(200).send({ id: 1, nome: 'Estudante Neon' });
+});
+                </code></pre>
+            </section>
+
+            <section>
+                <h2>A Magia do "Try it out"</h2>
+                <div class="box">
+                    <p>Diferente de um PDF estático, o Swagger permite que o desenvolvedor:</p>
+                    <ul>
+                        <li><span class="highlight-pink">Execute</span> rotas diretamente do navegador.</li>
+                        <li>Veja o <span class="highlight-pink">JSON</span> de resposta em tempo real.</li>
+                        <li>Teste códigos de erro (404, 500) sem precisar do Postman.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h3>Observações de Segurança</h3>
+                <div class="box" style="border-color: var(--pink);">
+                    <p class="highlight-pink">⚠️ Atenção em Produção!</p>
+                    <p>Em ambiente real, nunca deixe sua documentação aberta para qualquer um. Use um Middleware de autenticação para proteger a rota <code class="code-accent">/api-docs</code>.</p>
+                </div>
+            </section>
+
+            <section data-background-color="#1a1a2e">
+                <h2>Missão de Hoje</h2>
+                <div class="box" style="border-color: var(--green);">
+                    <ol>
+                        <li>Instale o Swagger no seu projeto Node.js.</li>
+                        <li>Configure a rota <code class="code-accent">/api-docs</code>.</li>
+                        <li>Documente uma rota de **POST** (Cadastro de Aluno).</li>
+                        <li>Teste o cadastro usando apenas a interface do Swagger.</li>
+                    </ol>
+                </div>
+                <p style="font-size: 0.6em; margin-top: 20px;">Acesse <span class="code-accent">localhost:3000/api-docs</span> para validar.</p>
+            </section>
+
+            <section>
+                <h1>Fim da Transmissão</h1>
+                <p>O Backend agora é visível.</p>
+                <a href="index.html" style="color: var(--cyan); border: 1px solid var(--cyan); padding: 10px 20px; border-radius: 5px; text-decoration: none; font-size: 0.6em;">Voltar ao Menu</a>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            center: true,
+            transition: 'convex',
+            plugins: []
+        });
+    </script>
+</body>
+</html>
