@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <title>Backend Lab: Servindo Arquivos Estáticos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css">
+    <style>
+        :root { --cyan: #00f2ff; --green: #39ff14; --pink: #ff79c6; --yellow: #f1fa8c; }
+        .reveal h1, .reveal h2 { color: var(--yellow); text-shadow: 0 0 15px var(--yellow); text-transform: uppercase; }
+        .reveal h3 { color: var(--cyan); }
+        .box { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; border: 1px solid var(--yellow); text-align: left; font-size: 0.7em; }
+        .code-accent { color: var(--green); font-family: monospace; font-weight: bold; }
+        pre { box-shadow: 0 0 20px rgba(241, 250, 140, 0.2); }
+        .highlight-red { color: var(--pink); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <section data-background-color="#050505">
+                <h1>Adeus, LiveServer!</h1>
+                <p>Transformando o Node.js em um Servidor de Arquivos Completo</p>
+                <div class="fragment box" style="text-align: center; border-color: var(--cyan);">
+                    "Por que usar uma extensão se o seu próprio Backend pode servir o Front-end?"
+                </div>
+            </section>
+
+            <section>
+                <h2>O que são Arquivos Estáticos?</h2>
+                <div class="box">
+                    <p>São arquivos que o servidor envia para o navegador **exatamente como estão no disco**, sem processamento dinâmico.</p>
+                    <ul>
+                        <li><span class="code-accent">HTML:</span> A estrutura do seu site.</li>
+                        <li><span class="code-accent">CSS/JS:</span> O estilo e comportamento.</li>
+                        <li><span class="code-accent">Imagens:</span> Seu logo, ícones e banners.</li>
+                    </ul>
+                </div>
+                
+            </section>
+
+            <section>
+                <h2>A Analogia da Janela de Atendimento</h2>
+                <div class="box" style="border-color: var(--pink);">
+                    <p>Imagine o seu servidor Node.js como uma **Fábrica Fechada** (Segurança).</p>
+                    <p class="fragment">Ninguém pode entrar lá dentro e pegar suas receitas (Código Fonte).</p>
+                    <p class="fragment">Ao expor uma pasta <code class="code-accent">public</code>, você está criando uma **Janela de Atendimento**.</p>
+                    <p class="fragment">O cliente só pode tocar e pegar o que você coloca naquela janela específica.</p>
+                </div>
+            </section>
+
+            <section>
+                <h3>LiveServer vs Produção</h3>
+                <div class="box">
+                    <p class="highlight-red">O PROBLEMA:</p>
+                    <p>O LiveServer cria um servidor separado (ex: porta 5500). Se seu Backend está na 3000, você terá erros de <strong>CORS</strong> e problemas ao subir para um Windows Server real.</p>
+                    <p class="code-accent">A SOLUÇÃO:</p>
+                    <p>O Node.js assume o controle. O Backend e o Front-end rodam na **mesma porta**, como uma aplicação profissional única.</p>
+                </div>
+            </section>
+
+            <section>
+                <h3>Passo 1: Estrutura de Pastas</h3>
+                <p style="font-size: 0.6em;">Crie a pasta <code class="code-accent">public</code> na raiz do seu projeto:</p>
+                <pre><code class="language-plaintext" style="font-size: 0.6em;">
+MeuProjeto/
+├── app.js
+├── package.json
+└── public/          <-- Janela de Atendimento
+    ├── index.html
+    ├── style.css
+    └── img/
+        └── logo.png
+                </code></pre>
+            </section>
+
+            <section>
+                <h3>Passo 2: Expondo a Pasta no Node</h3>
+                <p style="font-size: 0.5em;">Use o middleware nativo do Express <code class="code-accent">express.static</code>:</p>
+                <pre><code class="language-javascript" style="font-size: 0.5em; line-height: 1.3;">
+const express = require('express');
+const path = require('path');
+const app = express();
+
+// A MÁGICA ACONTECE AQUI:
+// Dizemos ao Express que tudo na pasta 'public' é livre para acesso
+app.use(express.static('public'));
+
+// Opcional: Servir a pasta de imagens com um prefixo
+app.use('/imagens', express.static('img'));
+
+app.listen(3000, () => {
+    console.log('Servidor rodando na porta 3000');
+    console.log('Acesse seu site em: http://localhost:3000');
+});
+                </code></pre>
+            </section>
+
+            <section data-background-color="#1a1a2e">
+                <h2>Missão: Independência</h2>
+                <div class="box" style="border-color: var(--green);">
+                    <ol>
+                        <li>Feche o LiveServer do seu VS Code.</li>
+                        <li>Crie a pasta <code class="code-accent">public</code> e mova seu HTML/CSS para lá.</li>
+                        <li>Adicione o <code class="code-accent">app.use(express.static('public'))</code> no seu Backend.</li>
+                        <li>Tente acessar o site via porta do Node (ex: 3000).</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section>
+                <h1>Servidor Unificado!</h1>
+                <p>Agora seu Backend é um servidor web completo e profissional.</p>
+                <a href="index.html" style="color: var(--yellow); border: 1px solid var(--yellow); padding: 10px 20px; border-radius: 5px; text-decoration: none; font-size: 0.6em;">Voltar ao Menu</a>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            center: true,
+            transition: 'slide'
+        });
+    </script>
+</body>
+</html>
