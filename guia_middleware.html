@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <title>Backend Lab: Entendendo Middlewares</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css">
+    <style>
+        :root { --cyan: #00f2ff; --green: #39ff14; --pink: #ff79c6; --purple: #bd93f9; --yellow: #f1fa8c; }
+        .reveal h1, .reveal h2 { color: var(--purple); text-shadow: 0 0 15px var(--purple); text-transform: uppercase; }
+        .reveal h3 { color: var(--cyan); }
+        .box { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; border: 1px solid var(--purple); text-align: left; font-size: 0.7em; }
+        .code-accent { color: var(--green); font-family: monospace; font-weight: bold; }
+        pre { box-shadow: 0 0 20px rgba(189, 147, 249, 0.2); }
+        .highlight-cyan { color: var(--cyan); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <section data-background-color="#050505">
+                <h1>Middlewares</h1>
+                <p>O "Porteiro" e o "Filtro" das suas Requisições</p>
+                <div class="fragment box" style="text-align: center; border-color: var(--cyan);">
+                    "Middleware é tudo o que acontece entre o pedido do cliente e a resposta final do servidor."
+                </div>
+            </section>
+
+            <section>
+                <h2>O que é um Middleware?</h2>
+                <div class="box">
+                    <p>No Express, um middleware é uma função que tem acesso aos objetos de:</p>
+                    <ul>
+                        <li><span class="highlight-cyan">Request (req):</span> O que o cliente enviou.</li>
+                        <li><span class="highlight-cyan">Response (res):</span> O que o servidor vai responder.</li>
+                        <li><span class="code-accent">Next:</span> A função que passa a bola para o próximo passo.</li>
+                    </ul>
+                </div>
+                
+            </section>
+
+            <section>
+                <h2>Analogia: O Segurança da Balada</h2>
+                <div class="box" style="border-color: var(--pink);">
+                    <p>Imagine uma Balada (sua Rota de API):</p>
+                    <ol>
+                        <li class="fragment"><strong>Middleware 1 (Segurança):</strong> Verifica se você está com RG e se tem idade permitida. Se não tiver, ele te barra ali mesmo (Response 403).</li>
+                        <li class="fragment"><strong>Middleware 2 (Revista):</strong> Verifica se você está portando algo proibido. Se estiver OK, ele diz: <span class="code-accent">"Next!"</span>.</li>
+                        <li class="fragment"><strong>Destino Final (Pista):</strong> Você finalmente entra e curte a festa (Sua lógica de código).</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section>
+                <h3>Onde eles atuam?</h3>
+                <div class="box">
+                    <p>1. <span class="highlight-cyan">Nível de Aplicação:</span> Afeta todas as rotas (ex: `app.use(express.json())`).</p>
+                    <p>2. <span class="highlight-cyan">Nível de Rota:</span> Atua apenas em um caminho específico (ex: verificar se o usuário é Admin antes de deletar algo).</p>
+                    <p>3. <span class="highlight-cyan">Tratamento de Erros:</span> Captura falhas e envia uma resposta amigável.</p>
+                </div>
+            </section>
+
+            <section>
+                <h3>Exemplo 1: Logger (Global)</h3>
+                <p style="font-size: 0.5em;">Este middleware registra cada acesso no terminal:</p>
+                <pre><code class="language-javascript" style="font-size: 0.5em; line-height: 1.3;">
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} em ${req.url}`);
+    next(); // Fundamental para não travar a requisição!
+});
+                </code></pre>
+            </section>
+
+            <section>
+                <h3>Exemplo 2: Autenticação (Específico)</h3>
+                <pre><code class="language-javascript" style="font-size: 0.45em; line-height: 1.2;">
+const verificarSenha = (req, res, next) => {
+    const { senha } = req.headers;
+    if (senha === 'admin123') {
+        next(); // Senha correta, pode passar
+    } else {
+        res.status(403).send('Acesso Negado!');
+    }
+};
+
+// Aplicando apenas na rota de exclusão:
+app.delete('/usuario/:id', verificarSenha, (req, res) => {
+    res.send('Usuário deletado!');
+});
+                </code></pre>
+            </section>
+
+            <section data-background-color="#1a1a2e">
+                <h2>Missão: O Filtro Neon</h2>
+                <div class="box" style="border-color: var(--green);">
+                    <ol>
+                        <li>Crie um middleware que verifique se o corpo da requisição (body) está vazio.</li>
+                        <li>Se estiver vazio, responda com erro 400.</li>
+                        <li>Se tiver dados, deixe passar usando <code class="code-accent">next()</code>.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section>
+                <h1>Middleware Dominado!</h1>
+                <p>Agora você controla o fluxo de dados como um profissional.</p>
+                <a href="index.html" style="color: var(--purple); border: 1px solid var(--purple); padding: 10px 20px; border-radius: 5px; text-decoration: none; font-size: 0.6em;">Voltar ao Menu</a>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            center: true,
+            transition: 'zoom'
+        });
+    </script>
+</body>
+</html>
