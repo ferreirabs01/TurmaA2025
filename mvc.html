@@ -3,604 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desvendando o MVC com Node.js</title>
+    <title>Mastering MVC: Neon Edition & Gemini AI</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/black.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/monokai.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            scroll-behavior: smooth;
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-yellow: #fefe33;
+        }
+        .reveal { background-color: #020202; }
+        .reveal h1, .reveal h2 {
+            color: var(--neon-cyan) !important;
+            text-shadow: 0 0 15px var(--neon-cyan);
+            text-transform: none !important;
+        }
+        .reveal h3 {
+            color: var(--neon-pink) !important;
+            text-shadow: 0 0 5px var(--neon-pink);
+            text-transform: none !important;
+        }
+        .reveal .slides section { text-align: left; font-size: 0.8em; }
+        .neon-box {
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            border-radius: 10px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        .code-block { font-size: 0.45em !important; line-height: 1.1em !important; }
+        .theory-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--neon-pink);
+            padding: 15px;
+            margin-top: 10px;
         }
 
-        .code-font {
-            font-family: 'Fira Code', monospace;
+        /* Floating AI Styles */
+        #ai-assistant {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
         }
-
-        .chart-container {
-            position: relative;
+        .ai-window {
+            width: 350px;
+            background: #0a0a0a;
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+            border-radius: 12px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            max-height: 500px;
+        }
+        .ai-header {
+            background: linear-gradient(90deg, #00f3ff, #bc13fe);
+            color: black;
+            padding: 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-content {
+            padding: 15px;
+            color: white;
+            overflow-y: auto;
+            font-size: 0.75rem;
+        }
+        .ai-input {
+            background: #1a1a1a;
+            border: none;
+            border-top: 1px solid #333;
+            color: white;
+            padding: 10px;
             width: 100%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px;
-            max-height: 400px;
+            outline: none;
         }
-
-        @media (max-width: 768px) {
-            .chart-container {
-                height: 250px;
-            }
+        .loading-dots:after {
+            content: ' .';
+            animation: dots 1s steps(5, end) infinite;
         }
-
-        /* Custom Scrollbar for code blocks */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f5f5f4; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #d6d3d1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a8a29e; 
-        }
-
-        .tab-active {
-            border-bottom: 2px solid #0f766e;
-            color: #0f766e;
-            font-weight: 600;
-        }
-        
-        .interactive-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        @keyframes dots {
+            0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            40% { color: var(--neon-cyan); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            60% { text-shadow: .25em 0 0 var(--neon-cyan), .5em 0 0 rgba(0,0,0,0); }
+            80%, 100% { text-shadow: .25em 0 0 var(--neon-cyan), .5em 0 0 var(--neon-cyan); }
         }
     </style>
-    
-    <!-- Chosen Palette: Warm Neutrals with Soft Teal & Amber Accents -->
-    <!-- Application Structure Plan: 
-         1. Hero Section: Catchy introduction setting the tone.
-         2. The Analogy (Interactive): A clickable restaurant metaphor to explain MVC intuitively to teens.
-         3. MVC in Node.js (Code Explorer): Tabbed interface to explore real code snippets (Model, View, Controller) without overwhelming them.
-         4. Why MVC? (Chart & Cards): Pros/Cons visualised with a Chart.js comparison of maintenance time, plus expandable cards for details.
-         5. Design Patterns: Grid layout linking MVC to broader engineering concepts (Creational, Structural, Behavioral).
-         6. The 5-Hour Masterplan: A step-by-step interactive timeline for the teacher/students to follow for the actual classes.
-         Rationale: This structure moves from conceptual (playful) to technical (code), then to analytical (pros/cons), and finally practical (lesson plan), perfectly suited for learning and teaching.
-    -->
-    <!-- Visualization & Content Choices: 
-         - Restaurant Analogy: HTML/CSS Flexbox with emojis. Interactive hover/click to reveal roles. Justification: Relatable analogy for 15-17yo beginners.
-         - Code Explorer: HTML Tabs + JS logic to switch code blocks. Justification: Keeps UI clean while showing how files connect.
-         - Maintenance Chart: Chart.js Line chart comparing "Spaghetti Code" vs "MVC Code" over time. Justification: Visually proves *why* we use architecture. NO SVG.
-         - 5-Hour Timeline: HTML/Tailwind vertical list. Justification: Clear roadmap for the educational goal.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body class="bg-[#fcfaf8] text-stone-800 antialiased selection:bg-teal-200 selection:text-teal-900">
+<body>
 
-    <!-- Navigation -->
-    <nav class="fixed w-full bg-[#fcfaf8]/90 backdrop-blur-md z-50 border-b border-stone-200">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex-shrink-0 flex items-center gap-2 font-bold text-xl text-teal-800">
-                    <span class="text-2xl">💻</span> DevTech MVC
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#analogia" class="text-stone-600 hover:text-teal-700 transition">A Analogia</a>
-                    <a href="#codigo" class="text-stone-600 hover:text-teal-700 transition">Node.js</a>
-                    <a href="#vantagens" class="text-stone-600 hover:text-teal-700 transition">Por que usar?</a>
-                    <a href="#patterns" class="text-stone-600 hover:text-teal-700 transition">Design Patterns</a>
-                    <a href="#plano" class="font-semibold text-teal-700 hover:text-teal-900 transition">Plano de 5h</a>
-                </div>
+    <!-- Gemini AI Floating Assistant -->
+    <div id="ai-assistant">
+        <div class="ai-window" id="ai-window">
+            <div class="ai-header">
+                <span>Gemini MVC Assistant ✨</span>
+                <button onclick="toggleAI()" class="text-black font-bold">✕</button>
             </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="pt-32 pb-20 px-4 max-w-6xl mx-auto text-center">
-        <div class="inline-block bg-amber-100 text-amber-800 px-4 py-1 rounded-full text-sm font-semibold mb-6 uppercase tracking-wider">
-            Material Didático Especial
-        </div>
-        <h1 class="text-4xl md:text-6xl font-extrabold text-stone-900 mb-6 leading-tight">
-            Desvendando o Padrão <span class="text-teal-700">MVC</span> <br>com Node.js
-        </h1>
-        <p class="text-lg md:text-xl text-stone-600 max-w-3xl mx-auto mb-10">
-            Chega de "código espaguete"! Vamos aprender a organizar sistemas web como profissionais. Este guia interativo foi feito para jovens desenvolvedores entenderem a separação de responsabilidades na prática.
-        </p>
-        <div class="flex justify-center gap-4">
-            <a href="#analogia" class="bg-teal-700 hover:bg-teal-800 text-white px-8 py-3 rounded-lg font-semibold transition shadow-lg shadow-teal-700/20">
-                Começar a Explorar
-            </a>
-        </div>
-    </section>
-
-    <!-- Section 1: A Analogia (Ludic Intro) -->
-    <section id="analogia" class="py-16 bg-white border-y border-stone-200">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-stone-900 mb-4">Entendendo o MVC: A Hamburgueria 🍔</h2>
-                <p class="text-stone-600 max-w-2xl mx-auto">
-                    Para entender como o Model, View e Controller conversam, imagine o funcionamento de um restaurante. Clique nos personagens abaixo para descobrir quem é quem no mundo do código!
-                </p>
+            <div class="ai-content" id="ai-response">
+                Olá Dev! Cole um código confuso ou me peça um desafio sobre MVC para começarmos.
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- VIEW -->
-                <div class="interactive-card bg-stone-50 border border-stone-200 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300" onclick="toggleCard('view-desc')">
-                    <div class="text-6xl mb-4">🍽️</div>
-                    <h3 class="text-2xl font-bold text-stone-800 mb-2">View (A Visão)</h3>
-                    <p class="text-stone-500 font-medium">O Cliente e o Cardápio</p>
-                    <div id="view-desc" class="hidden mt-4 text-stone-600 text-sm text-left bg-white p-4 rounded-lg border border-stone-100">
-                        <p><strong>Na lanchonete:</strong> É a interface. É o que o cliente vê (o cardápio bonito, o prato montado). O cliente não entra na cozinha para fritar a carne.</p>
-                        <p class="mt-2"><strong>No código:</strong> É o HTML/CSS (ou um JSON se for uma API). A View só exibe os dados bonitinhos na tela e captura os cliques do usuário.</p>
-                    </div>
-                </div>
-
-                <!-- CONTROLLER -->
-                <div class="interactive-card bg-teal-50 border border-teal-100 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300" onclick="toggleCard('controller-desc')">
-                    <div class="text-6xl mb-4">🤵</div>
-                    <h3 class="text-2xl font-bold text-teal-900 mb-2">Controller</h3>
-                    <p class="text-teal-700 font-medium">O Garçom</p>
-                    <div id="controller-desc" class="hidden mt-4 text-stone-600 text-sm text-left bg-white p-4 rounded-lg border border-teal-50">
-                        <p><strong>Na lanchonete:</strong> O garçom anota o pedido (da View), leva para a cozinha (Model), pega o lanche pronto e entrega de volta para o cliente.</p>
-                        <p class="mt-2"><strong>No código:</strong> É o "cérebro" das rotas. Ele recebe as requisições (ex: clicar no botão "Salvar"), pede pro Model buscar ou salvar no banco de dados, e depois decide qual View mostrar na tela.</p>
-                    </div>
-                </div>
-
-                <!-- MODEL -->
-                <div class="interactive-card bg-stone-50 border border-stone-200 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300" onclick="toggleCard('model-desc')">
-                    <div class="text-6xl mb-4">🧑‍🍳</div>
-                    <h3 class="text-2xl font-bold text-stone-800 mb-2">Model (O Modelo)</h3>
-                    <p class="text-stone-500 font-medium">O Chef de Cozinha</p>
-                    <div id="model-desc" class="hidden mt-4 text-stone-600 text-sm text-left bg-white p-4 rounded-lg border border-stone-100">
-                        <p><strong>Na lanchonete:</strong> O chef sabe a receita, vai no estoque pegar os ingredientes (Banco de Dados) e prepara o lanche com as regras corretas (não queimar a carne).</p>
-                        <p class="mt-2"><strong>No código:</strong> É onde fica a Regra de Negócio e o acesso ao Banco de Dados. O Model não sabe de qual cor é o botão na tela, ele só sabe salvar, editar ou apagar dados.</p>
-                    </div>
-                </div>
-            </div>
+            <input type="text" id="ai-prompt" class="ai-input" placeholder="Pergunte algo ou peça um desafio... ✨" onkeypress="handleKeyPress(event)">
         </div>
-    </section>
+        <button onclick="toggleAI()" class="bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-3 px-6 rounded-full shadow-lg transition-all flex items-center gap-2 border-2 border-white/20">
+            Falar com a IA ✨
+        </button>
+    </div>
 
-    <!-- Section 2: Code Explorer (Node.js) -->
-    <section id="codigo" class="py-16 bg-stone-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="mb-10 text-center">
-                <span class="text-teal-700 font-bold tracking-widest text-sm uppercase">Mão na Massa</span>
-                <h2 class="text-3xl font-bold text-stone-900 mt-2">O Trio MVC no Node.js</h2>
-                <p class="text-stone-600 mt-4 max-w-2xl mx-auto">
-                    Como traduzimos isso para código de verdade? Em Node.js (com Express), nós separamos nosso projeto em pastas lógicas. Navegue pelas abas abaixo para ver como um sistema de "Cadastro de Usuários" funciona.
-                </p>
-            </div>
+    <div class="reveal">
+        <div class="slides">
 
-            <!-- Code Explorer UI -->
-            <div class="bg-stone-900 rounded-xl shadow-2xl overflow-hidden border border-stone-800 max-w-4xl mx-auto">
-                <!-- Mac-like Header -->
-                <div class="bg-stone-800 px-4 py-3 flex items-center gap-2 border-b border-stone-700">
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span class="ml-4 text-stone-400 text-xs font-mono">meu-projeto-node</span>
+            <!-- INTRO -->
+            <section class="text-center">
+                <h1 class="text-6xl font-black">MVC ARCHITECTURE</h1>
+                <h3 class="tracking-widest opacity-80">TEORIA, PRÁTICA & IA ✨</h3>
+                <div class="mt-20 text-stone-500 text-sm">
+                    <p>Unidade de Backend • Node.js + MySQL</p>
+                    <p>Integração com Gemini AI para suporte ao aluno</p>
                 </div>
-                
-                <!-- Tabs -->
-                <div class="flex border-b border-stone-700 bg-stone-800/50">
-                    <button class="px-6 py-3 text-sm font-mono text-stone-300 hover:text-white transition focus:outline-none" id="tab-model" onclick="switchCode('model')">📄 userModel.js (Model)</button>
-                    <button class="px-6 py-3 text-sm font-mono text-teal-400 border-b-2 border-teal-400 focus:outline-none" id="tab-controller" onclick="switchCode('controller')">📄 userController.js (Controller)</button>
-                    <button class="px-6 py-3 text-sm font-mono text-stone-300 hover:text-white transition focus:outline-none" id="tab-view" onclick="switchCode('view')">📄 index.ejs (View)</button>
-                    <button class="px-6 py-3 text-sm font-mono text-stone-300 hover:text-white transition focus:outline-none" id="tab-routes" onclick="switchCode('routes')">🔗 routes.js (Rotas)</button>
+            </section>
+
+            <!-- ANALOGIA LÚDICA -->
+            <section>
+                <h3>A Analogia: Hamburgueria MVC 🍔</h3>
+                <div class="grid grid-cols-1 gap-4 mt-4">
+                    <div class="neon-box fragment" style="border-color: var(--neon-pink);">
+                        <span style="color: var(--neon-pink); font-weight: bold;">VIEW (O Cardápio/Prato):</span> 
+                        Interface visual. O cliente só vê o que está pronto.
+                    </div>
+                    <div class="neon-box fragment" style="border-color: var(--neon-cyan);">
+                        <span style="color: var(--neon-cyan); font-weight: bold;">CONTROLLER (O Garçom):</span> 
+                        Intermediário. Recebe o pedido, coordena a lógica.
+                    </div>
+                    <div class="neon-box fragment" style="border-color: var(--neon-yellow);">
+                        <span style="color: var(--neon-yellow); font-weight: bold;">MODEL (O Chef/Estoque):</span> 
+                        Lógica e Dados. Acesso ao MySQL.
+                    </div>
                 </div>
+                <div class="mt-8 text-center fragment">
+                    <button onclick="askAI('Explique a analogia da hamburgueria MVC de um jeito engraçado para um jovem de 16 anos')" class="text-xs bg-pink-600 px-4 py-2 rounded-lg border border-white/30">
+                        IA: Explicação Engraçada ✨
+                    </button>
+                </div>
+            </section>
 
-                <!-- Code Content -->
-                <div class="p-6 overflow-x-auto code-font text-sm leading-relaxed" style="min-height: 350px;">
-                    
-                    <!-- Controller Code (Default) -->
-                    <div id="code-controller" class="block">
-<pre><code class="text-stone-300"><span class="text-purple-400">const</span> UserModel = <span class="text-blue-400">require</span>(<span class="text-green-400">'../models/userModel'</span>);
+            <!-- PRÁTICA: O CÓDIGO ATUAL (MONOLITO) -->
+            <section>
+                <h2>O Monolito Atual</h2>
+                <pre class="code-block"><code class="language-javascript">
+// app.js - Tudo misturado
+app.post('/upload', upload.single('foto'), async (req, res) => {
+    const { nome } = req.body; 
+    const caminho = `/img/${req.file.filename}`;
+    const sql = "INSERT INTO fotos (nome, caminho) VALUES (?, ?)";
+    await db.query(sql, [nome, caminho]);
+    res.json({ mensagem: "Sucesso!" });
+});
+                </code></pre>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="askAI('Refatore este código de upload para MVC funcional em Node.js e explique a separação')" class="text-xs bg-cyan-600 px-4 py-2 rounded-lg border border-white/30">
+                        IA: Refatorar ✨
+                    </button>
+                </div>
+            </section>
 
-<span class="text-stone-500">// O Controller (Garçom) gerenciando a requisição</span>
-<span class="text-purple-400">const</span> userController = {
-  <span class="text-blue-300">listarUsuarios</span>: <span class="text-purple-400">async</span> (req, res) => {
-    <span class="text-purple-400">try</span> {
-      <span class="text-stone-500">// 1. Pede pro Model os dados (Cozinha)</span>
-      <span class="text-purple-400">const</span> usuarios = <span class="text-purple-400">await</span> UserModel.<span class="text-blue-300">buscarTodos</span>();
-      
-      <span class="text-stone-500">// 2. Entrega os dados para a View (Cliente)</span>
-      res.<span class="text-blue-300">render</span>(<span class="text-green-400">'usuarios/index'</span>, { lista: usuarios });
-      
-    } <span class="text-purple-400">catch</span> (erro) {
-      res.<span class="text-blue-300">status</span>(500).<span class="text-blue-300">send</span>(<span class="text-green-400">"Erro ao buscar os usuários."</span>);
-    }
-  }
-};
+            <!-- SLIDE DE DESAFIO DINÂMICO -->
+            <section>
+                <h2>Desafio de Código IA ✨</h2>
+                <p class="text-sm mb-6">Clique no botão abaixo para gerar um desafio aleatório de MVC com MySQL baseado no que aprendemos hoje.</p>
+                <div id="dynamic-challenge" class="neon-box min-h-[150px] text-sm italic text-cyan-200">
+                    Aguardando geração do desafio...
+                </div>
+                <button onclick="generateChallenge()" class="mt-6 bg-pink-600 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-lg transition-all w-full md:w-auto">
+                    Gerar Novo Desafio ✨
+                </button>
+            </section>
 
-<span class="text-purple-400">module</span>.exports = userController;</code></pre>
+            <!-- VANTAGENS E DESVANTAGENS -->
+            <section>
+                <h3>Análise Crítica</h3>
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="theory-card" style="border-color: var(--neon-cyan);">
+                        <h4 class="text-cyan-400 font-bold text-sm">Vantagens</h4>
+                        <ul class="text-[10px] space-y-1">
+                            <li>✅ Separação de Preocupações</li>
+                            <li>✅ Reuso de Código</li>
+                            <li>✅ Escalabilidade</li>
+                        </ul>
                     </div>
-
-                    <!-- Model Code -->
-                    <div id="code-model" class="hidden">
-<pre><code class="text-stone-300"><span class="text-stone-500">// Simulação de um banco de dados (A Cozinha / Estoque)</span>
-<span class="text-purple-400">const</span> dbUsuarios = [
-  { id: 1, nome: <span class="text-green-400">'Ana'</span>, curso: <span class="text-green-400">'Desenvolvimento'</span> },
-  { id: 2, nome: <span class="text-green-400">'Pedro'</span>, curso: <span class="text-green-400">'Redes'</span> }
-];
-
-<span class="text-purple-400">const</span> UserModel = {
-  <span class="text-stone-500">// Método focado apenas em DADOS. Sem HTML aqui!</span>
-  <span class="text-blue-300">buscarTodos</span>: <span class="text-purple-400">async</span> () => {
-    <span class="text-stone-500">// Em um app real, aqui teria uma query SQL ou MongoDB</span>
-    <span class="text-purple-400">return</span> dbUsuarios;
-  }
-};
-
-<span class="text-purple-400">module</span>.exports = UserModel;</code></pre>
+                    <div class="theory-card" style="border-color: var(--neon-pink);">
+                        <h4 class="text-pink-500 font-bold text-sm">Desvantagens</h4>
+                        <ul class="text-[10px] space-y-1">
+                            <li>❌ Complexidade Adicional</li>
+                            <li>❌ Mais arquivos/pastas</li>
+                        </ul>
                     </div>
+                </div>
+                <div class="mt-8 text-center">
+                    <button onclick="askAI('Quais os maiores erros que iniciantes cometem ao tentar implementar MVC pela primeira vez?')" class="text-xs bg-stone-800 px-4 py-2 rounded-lg border border-white/20">
+                        IA: Erros Comuns ✨
+                    </button>
+                </div>
+            </section>
 
-                    <!-- View Code -->
-                    <div id="code-view" class="hidden">
-<pre><code class="text-stone-300"><span class="text-stone-500">&lt;!-- A View usando a Template Engine EJS (O Prato Pronto) --&gt;</span>
-<span class="text-teal-400">&lt;!DOCTYPE html&gt;</span>
-<span class="text-teal-400">&lt;html&gt;</span>
-<span class="text-teal-400">&lt;head&gt;</span>
-    <span class="text-teal-400">&lt;title&gt;</span>Lista de Alunos<span class="text-teal-400">&lt;/title&gt;</span>
-<span class="text-teal-400">&lt;/head&gt;</span>
-<span class="text-teal-400">&lt;body&gt;</span>
-    <span class="text-teal-400">&lt;h1&gt;</span>Alunos Matriculados<span class="text-teal-400">&lt;/h1&gt;</span>
+            <!-- CONCLUSÃO -->
+            <section class="text-center">
+                <h2 class="animate-pulse">HORA DE CODAR!</h2>
+                <p class="mt-10">Use o assistente de IA se ficar travado.</p>
+                <div class="mt-20">
+                    <p class="text-stone-600 text-[10px]">Agradecimentos: Gemini AI Integration</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.min.js"></script>
     
-    <span class="text-teal-400">&lt;ul&gt;</span>
-        <span class="text-yellow-400">&lt;%</span> lista.forEach(usuario => { <span class="text-yellow-400">%&gt;</span>
-            <span class="text-teal-400">&lt;li&gt;</span>
-                <span class="text-yellow-400">&lt;%=</span> usuario.nome <span class="text-yellow-400">%&gt;</span> - <span class="text-yellow-400">&lt;%=</span> usuario.curso <span class="text-yellow-400">%&gt;</span>
-            <span class="text-teal-400">&lt;/li&gt;</span>
-        <span class="text-yellow-400">&lt;%</span> }) <span class="text-yellow-400">%&gt;</span>
-    <span class="text-teal-400">&lt;/ul&gt;</span>
-<span class="text-teal-400">&lt;/body&gt;</span>
-<span class="text-teal-400">&lt;/html&gt;</span></code></pre>
-                    </div>
-
-                    <!-- Routes Code -->
-                    <div id="code-routes" class="hidden">
-<pre><code class="text-stone-300"><span class="text-purple-400">const</span> express = <span class="text-blue-400">require</span>(<span class="text-green-400">'express'</span>);
-<span class="text-purple-400">const</span> router = express.<span class="text-blue-300">Router</span>();
-<span class="text-purple-400">const</span> userController = <span class="text-blue-400">require</span>(<span class="text-green-400">'../controllers/userController'</span>);
-
-<span class="text-stone-500">// O Menu da Lanchonete. Quem direciona os pedidos.</span>
-
-<span class="text-stone-500">// Quando o usuário acessar "/usuarios" via GET...</span>
-<span class="text-stone-500">// ...chame o "Garçom" (Controller) responsável</span>
-router.<span class="text-blue-300">get</span>(<span class="text-green-400">'/usuarios'</span>, userController.listarUsuarios);
-
-<span class="text-purple-400">module</span>.exports = router;</code></pre>
-                    </div>
-
-                </div>
-            </div>
-            <p class="text-center text-sm text-stone-500 mt-4 font-mono">Clique nas abas acima para navegar entre as camadas.</p>
-        </div>
-    </section>
-
-    <!-- Section 3: Vantagens e Desvantagens (Chart & Analysis) -->
-    <section id="vantagens" class="py-16 bg-white">
-        <div class="max-w-6xl mx-auto px-4">
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <!-- Text and Cards -->
-                <div>
-                    <h2 class="text-3xl font-bold text-stone-900 mb-6">Por que dar esse trabalho todo?</h2>
-                    <p class="text-stone-600 mb-8">
-                        No início, separar tudo em pastas parece "escrever código a mais à toa" (o chamado <em>boilerplate</em>). Porém, em sistemas corporativos, essa organização salva vidas.
-                    </p>
-
-                    <div class="space-y-4">
-                        <!-- Pro -->
-                        <div class="bg-stone-50 p-5 rounded-xl border-l-4 border-teal-600 flex gap-4 items-start">
-                            <div class="text-2xl mt-1">✨</div>
-                            <div>
-                                <h4 class="font-bold text-stone-900">Separação de Preocupações (Separation of Concerns)</h4>
-                                <p class="text-sm text-stone-600 mt-1">O front-end (quem cuida do HTML/View) pode trabalhar ao mesmo tempo que o back-end (quem cuida do banco/Model) sem dar conflito nos arquivos.</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Pro -->
-                        <div class="bg-stone-50 p-5 rounded-xl border-l-4 border-teal-600 flex gap-4 items-start">
-                            <div class="text-2xl mt-1">🛠️</div>
-                            <div>
-                                <h4 class="font-bold text-stone-900">Manutenção Descomplicada</h4>
-                                <p class="text-sm text-stone-600 mt-1">Se o banco de dados mudar de MySQL para MongoDB, você altera apenas o Model. A View e o Controller nem ficam sabendo da mudança!</p>
-                            </div>
-                        </div>
-
-                        <!-- Con -->
-                        <div class="bg-stone-50 p-5 rounded-xl border-l-4 border-amber-500 flex gap-4 items-start">
-                            <div class="text-2xl mt-1">⚠️</div>
-                            <div>
-                                <h4 class="font-bold text-stone-900">Desvantagem: Complexidade Inicial</h4>
-                                <p class="text-sm text-stone-600 mt-1">Para um app muito simples (ex: script de 1 página), usar MVC é matar formiga com canhão. Exige uma curva de aprendizado inicial.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chart -->
-                <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-                    <h3 class="text-center font-bold text-stone-800 mb-2">Curva de Manutenção de Código</h3>
-                    <p class="text-center text-xs text-stone-500 mb-6">Código Desorganizado vs Estrutura MVC ao longo do tempo</p>
-                    <div class="chart-container">
-                        <canvas id="maintenanceChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Section 4: Design Patterns Relacionados -->
-    <section id="patterns" class="py-16 bg-stone-900 text-stone-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <span class="text-teal-400 font-bold tracking-widest text-sm uppercase">Além do Básico</span>
-                <h2 class="text-3xl font-bold mt-2 text-white">MVC e os Design Patterns</h2>
-                <p class="text-stone-400 max-w-2xl mx-auto mt-4">
-                    O MVC é um padrão <em>arquitetural</em> (define a estrutura geral). Dentro de suas camadas (Model, View, Controller), os programadores usam <strong>Padrões de Projeto (Design Patterns)</strong> para resolver mini-problemas específicos.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Creational -->
-                <div class="bg-stone-800 p-6 rounded-xl border border-stone-700 hover:border-teal-500 transition-colors">
-                    <div class="text-amber-400 mb-3 text-xl font-mono">01. Criacionais</div>
-                    <h3 class="text-xl font-bold mb-2">Factory & Singleton</h3>
-                    <p class="text-stone-400 text-sm mb-4">Lidam com a criação segura de objetos.</p>
-                    <ul class="text-sm text-stone-300 space-y-2">
-                        <li><span class="text-teal-400">▶</span> <strong>Singleton:</strong> Garante que a conexão com o banco de dados (no Model) aconteça apenas uma vez, poupando memória do servidor.</li>
-                        <li><span class="text-teal-400">▶</span> <strong>Factory:</strong> Cria diferentes tipos de usuários (Admin, Aluno) sem espalhar vários "News" pelo Controller.</li>
-                    </ul>
-                </div>
-
-                <!-- Structural -->
-                <div class="bg-stone-800 p-6 rounded-xl border border-stone-700 hover:border-teal-500 transition-colors">
-                    <div class="text-amber-400 mb-3 text-xl font-mono">02. Estruturais</div>
-                    <h3 class="text-xl font-bold mb-2">Adapter & Decorator</h3>
-                    <p class="text-stone-400 text-sm mb-4">Organizam como as classes se compõem.</p>
-                    <ul class="text-sm text-stone-300 space-y-2">
-                        <li><span class="text-teal-400">▶</span> <strong>Adapter:</strong> Usado para "traduzir" dados de uma API externa para o formato que o seu sistema já espera.</li>
-                        <li><span class="text-teal-400">▶</span> <strong>Decorator:</strong> Adiciona funcionalidades extras em um objeto (ex: encriptar senha) antes de salvá-lo no Model.</li>
-                    </ul>
-                </div>
-
-                <!-- Behavioral -->
-                <div class="bg-stone-800 p-6 rounded-xl border border-stone-700 hover:border-teal-500 transition-colors">
-                    <div class="text-amber-400 mb-3 text-xl font-mono">03. Comportamentais</div>
-                    <h3 class="text-xl font-bold mb-2">Observer & Strategy</h3>
-                    <p class="text-stone-400 text-sm mb-4">Gerenciam o fluxo de informações e algoritmos.</p>
-                    <ul class="text-sm text-stone-300 space-y-2">
-                        <li><span class="text-teal-400">▶</span> <strong>Observer:</strong> "Avisa" automaticamente a View quando um dado no Model foi atualizado (muito comum em React/Vue).</li>
-                        <li><span class="text-teal-400">▶</span> <strong>Strategy:</strong> Permite ao Controller alternar táticas (ex: pagamento via Pix, Cartão ou Boleto) sem encher o código de `if/else`.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Section 5: Plano de Aula (5 Horas) -->
-    <section id="plano" class="py-16 bg-[#fcfaf8]">
-        <div class="max-w-4xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">Trilha Prática</span>
-                <h2 class="text-3xl font-bold text-stone-900 mt-4">O Plano de Voo (5 Horas)</h2>
-                <p class="text-stone-600 mt-3">Para professores e alunos: Como dividiremos nosso aprendizado e as atividades práticas desta unidade.</p>
-            </div>
-
-            <!-- Timeline -->
-            <div class="relative border-l-2 border-stone-200 ml-4 md:ml-0 space-y-8">
-                
-                <!-- Hour 1 -->
-                <div class="relative pl-8 md:pl-10">
-                    <div class="absolute -left-[11px] top-1 w-5 h-5 bg-teal-600 rounded-full ring-4 ring-white"></div>
-                    <h3 class="text-xl font-bold text-stone-800">Hora 1: A Base e a Analogia</h3>
-                    <div class="bg-white p-4 mt-2 rounded-lg border border-stone-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between">
-                        <div>
-                            <p class="text-stone-600 text-sm">Apresentação do conceito de Arquitetura de Software. Discussão da "Hamburgueria" (Model, View, Controller). Debate sobre as vantagens (Separação de Preocupações) vs Código Espaguete.</p>
-                        </div>
-                        <div class="bg-stone-50 px-3 py-2 border border-stone-100 rounded text-xs text-stone-500 min-w-[120px] text-center h-fit">
-                            <strong>Prática:</strong><br> Quiz interativo
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Hour 2 -->
-                <div class="relative pl-8 md:pl-10">
-                    <div class="absolute -left-[11px] top-1 w-5 h-5 bg-teal-600 rounded-full ring-4 ring-white"></div>
-                    <h3 class="text-xl font-bold text-stone-800">Hora 2: Iniciando o Node.js</h3>
-                    <div class="bg-white p-4 mt-2 rounded-lg border border-stone-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between">
-                        <div>
-                            <p class="text-stone-600 text-sm">Criação do projeto Node com `npm init`. Instalação do framework Express. Criação do arquivo principal (server.js) e entendimento de Rotas básicas (GET).</p>
-                        </div>
-                        <div class="bg-stone-50 px-3 py-2 border border-stone-100 rounded text-xs text-stone-500 min-w-[120px] text-center h-fit">
-                            <strong>Prática:</strong><br> Hello World Servidor
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Hour 3 -->
-                <div class="relative pl-8 md:pl-10">
-                    <div class="absolute -left-[11px] top-1 w-5 h-5 bg-teal-600 rounded-full ring-4 ring-white"></div>
-                    <h3 class="text-xl font-bold text-stone-800">Hora 3: Implementando Controller e View</h3>
-                    <div class="bg-white p-4 mt-2 rounded-lg border border-stone-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between">
-                        <div>
-                            <p class="text-stone-600 text-sm">Criando a pasta `controllers` e isolando a lógica da rota. Configurando a Template Engine EJS na pasta `views`. Passando variáveis simples do Controller para serem renderizadas na View HTML.</p>
-                        </div>
-                        <div class="bg-stone-50 px-3 py-2 border border-stone-100 rounded text-xs text-stone-500 min-w-[120px] text-center h-fit">
-                            <strong>Prática:</strong><br> Renderizar EJS
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Hour 4 -->
-                <div class="relative pl-8 md:pl-10">
-                    <div class="absolute -left-[11px] top-1 w-5 h-5 bg-teal-600 rounded-full ring-4 ring-white"></div>
-                    <h3 class="text-xl font-bold text-stone-800">Hora 4: O Model e o Fluxo Completo</h3>
-                    <div class="bg-white p-4 mt-2 rounded-lg border border-stone-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between">
-                        <div>
-                            <p class="text-stone-600 text-sm">Criação da pasta `models`. Simulação de um banco de dados usando Arrays JSON. O Controller importando o Model, buscando os dados e enviando para o EJS exibir uma lista de usuários dinamicamente.</p>
-                        </div>
-                        <div class="bg-stone-50 px-3 py-2 border border-stone-100 rounded text-xs text-stone-500 min-w-[120px] text-center h-fit">
-                            <strong>Prática:</strong><br> Lista Dinâmica
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Hour 5 -->
-                <div class="relative pl-8 md:pl-10">
-                    <div class="absolute -left-[11px] top-1 w-5 h-5 bg-teal-600 rounded-full ring-4 ring-white"></div>
-                    <h3 class="text-xl font-bold text-stone-800">Hora 5: Design Patterns Básicos e Desafio Final</h3>
-                    <div class="bg-white p-4 mt-2 rounded-lg border border-stone-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between">
-                        <div>
-                            <p class="text-stone-600 text-sm">Revisão teórica de Design Patterns (Singleton, Factory, Observer). Refatoração de código. Desafio prático: Os alunos recebem a tarefa de adicionar um formulário (View) para inserir novos dados (Controller) no array (Model).</p>
-                        </div>
-                        <div class="bg-stone-50 px-3 py-2 border border-stone-100 rounded text-xs text-stone-500 min-w-[120px] text-center h-fit">
-                            <strong>Prática:</strong><br> Desafio Form
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-stone-100 py-8 border-t border-stone-200 text-center text-stone-500 text-sm">
-        <p>Material Didático Interativo • Curso Técnico Desenvolvimento de Sistemas • Disciplina: Backend</p>
-    </footer>
-
-    <!-- Application Logic -->
     <script>
-        // 1. Interaction Logic for "The Analogy" Cards
-        function toggleCard(id) {
-            const descElement = document.getElementById(id);
-            if (descElement.classList.contains('hidden')) {
-                descElement.classList.remove('hidden');
-                descElement.classList.add('block', 'animate-fade-in-down');
-            } else {
-                descElement.classList.add('hidden');
-                descElement.classList.remove('block', 'animate-fade-in-down');
+        const apiKey = ""; // Environment handles this
+
+        async function callGemini(prompt, systemInstruction = "") {
+            const responseContainer = document.getElementById('ai-response');
+            responseContainer.innerHTML = '<span class="loading-dots">Processando</span>';
+            
+            let retries = 0;
+            const maxRetries = 5;
+            
+            while (retries < maxRetries) {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            systemInstruction: { parts: [{ text: systemInstruction || "Você é um assistente tutor de programação para alunos de curso técnico (15-17 anos). Responda de forma clara, didática e divertida sobre MVC, Node.js e MySQL." }] }
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('API Error');
+
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (error) {
+                    retries++;
+                    const delay = Math.pow(2, retries) * 500;
+                    await new Promise(r => setTimeout(r, delay));
+                }
+            }
+            return "Ops! Ocorreu um erro ao conectar com a IA. Tente novamente em instantes.";
+        }
+
+        async function askAI(customPrompt) {
+            toggleAI(true);
+            const response = await callGemini(customPrompt);
+            document.getElementById('ai-response').innerText = response;
+        }
+
+        async function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                const prompt = document.getElementById('ai-prompt').value;
+                if (!prompt) return;
+                document.getElementById('ai-prompt').value = '';
+                const response = await callGemini(prompt);
+                document.getElementById('ai-response').innerText = response;
             }
         }
 
-        // 2. Logic for Tabbed Code Explorer
-        function switchCode(tabName) {
-            // Reset Tab styling
-            const tabs = ['model', 'controller', 'view', 'routes'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                btn.classList.remove('text-teal-400', 'border-b-2', 'border-teal-400');
-                btn.classList.add('text-stone-300');
-                
-                // Hide code
-                document.getElementById(`code-${t}`).classList.add('hidden');
-                document.getElementById(`code-${t}`).classList.remove('block');
-            });
-
-            // Activate clicked tab
-            const activeBtn = document.getElementById(`tab-${tabName}`);
-            activeBtn.classList.remove('text-stone-300');
-            activeBtn.classList.add('text-teal-400', 'border-b-2', 'border-teal-400');
+        async function generateChallenge() {
+            const container = document.getElementById('dynamic-challenge');
+            container.innerHTML = '<span class="loading-dots">Gerando desafio épico</span>';
             
-            // Show code
-            document.getElementById(`code-${tabName}`).classList.remove('hidden');
-            document.getElementById(`code-${tabName}`).classList.add('block');
+            const prompt = "Gere um desafio prático de backend em Node.js e MySQL que utilize o padrão MVC. O desafio deve ser curto, focado em uma funcionalidade específica (ex: excluir item, atualizar status) e adequado para alunos iniciantes. Formate apenas o texto do desafio.";
+            const response = await callGemini(prompt, "Você é um gerador de exercícios de programação desafiadores e lúdicos.");
+            container.innerText = response;
         }
 
-        // 3. Chart.js Initialization
-        document.addEventListener("DOMContentLoaded", function() {
-            const ctx = document.getElementById('maintenanceChart').getContext('2d');
-            
-            // Data simulating the effort/time to maintain software
-            const months = ['Mês 1', 'Mês 3', 'Mês 6', 'Mês 9', 'Mês 12', 'Ano 2'];
-            
-            const chartData = {
-                labels: months,
-                datasets: [
-                    {
-                        label: 'Código Desorganizado (Espaguete)',
-                        data: [20, 35, 60, 90, 130, 200],
-                        borderColor: '#f59e0b', // Amber-500
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true
-                    },
-                    {
-                        label: 'Arquitetura MVC',
-                        data: [40, 45, 50, 55, 60, 65], // Starts higher (learning curve/boilerplate), scales better
-                        borderColor: '#0f766e', // Teal-700
-                        backgroundColor: 'rgba(15, 118, 110, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true
-                    }
-                ]
-            };
+        function toggleAI(forceShow = false) {
+            const win = document.getElementById('ai-window');
+            if (forceShow) win.style.display = 'flex';
+            else win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+        }
 
-            const config = {
-                type: 'line',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // Important to respect container dimensions
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                font: {
-                                    family: "'Inter', sans-serif"
-                                },
-                                usePointStyle: true
-                            }
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: 'rgba(28, 25, 23, 0.9)', // Stone-900
-                            titleFont: { family: "'Inter', sans-serif" },
-                            bodyFont: { family: "'Inter', sans-serif" },
-                            padding: 12,
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + context.parsed.y + ' hrs de manutenção';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Esforço (Horas/Bugs)',
-                                font: { family: "'Inter', sans-serif", weight: '600' }
-                            },
-                            grid: {
-                                color: '#f5f5f4' // stone-100
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
-                    }
-                }
-            };
-
-            new Chart(ctx, config);
+        Reveal.initialize({
+            hash: false,
+            plugins: [ RevealHighlight ],
+            transition: 'fade',
+            center: true
         });
     </script>
 </body>
